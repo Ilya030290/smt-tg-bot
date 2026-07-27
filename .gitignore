@@ -1,0 +1,10 @@
+token.txt
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.xlsm
+*.xlsx
+!template.xlsm
+debug_results/
+temp_*.xlsx
