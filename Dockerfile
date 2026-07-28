@@ -1,13 +1,15 @@
 # Базовый образ Python
 FROM python:3.11-slim
 
+# Создаём рабочую директорию
+WORKDIR /app
+
 # Устанавливаем системные зависимости (нужны для xlwings и openpyxl)
 RUN apt-get update && apt-get install -y \
     gcc \
+    libgl1-mesa-glx \
+    libxcb-xinerama0 \
     && rm -rf /var/lib/apt/lists/*
-
-# Создаём рабочую директорию
-WORKDIR /app
 
 # Копируем файл с зависимостями и устанавливаем их
 COPY requirements.txt .
