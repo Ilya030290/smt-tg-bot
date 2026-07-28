@@ -792,7 +792,7 @@ async def save_and_send_final(update: Update, context: ContextTypes.DEFAULT_TYPE
             }
             df = pd.concat([df, pd.DataFrame([sn_row])], ignore_index=True)
 
-        with xw.App(visible=False, add_book=False) as app:
+        with xw.App(visible=False, add_book=False, engine='xlwings') as app:
             wb = app.books.open(TEMPLATE_XLSM)
 
             ws_proj = wb.sheets['Project Data']
