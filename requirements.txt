@@ -1,4 +1,5 @@
 python-telegram-bot
+xlrd>=2.0.1
 pandas
 chardet
 xlsxwriter
