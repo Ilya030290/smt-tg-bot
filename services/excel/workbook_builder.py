@@ -1,8 +1,6 @@
 import os
-import math
 import tempfile
 import pandas as pd
-import xlwings as xw
 import openpyxl
 import logging
 from services.excel.block_offsets import calculate_offsets
@@ -86,14 +84,6 @@ def generate_pnp_from_xlsm(xlsm_path, output_dir, project_name, pcb_side):
     return pnp_path
 
 def build_program_files(project_data, df, template_path):
-    """
-    Основная функция генерации .xlsm и .pnp.
-    project_data – экземпляр ProjectData
-    df – pandas DataFrame с данными
-    template_path – путь к шаблону .xlsm
-    Возвращает (xlsm_path, pnp_path)
-    """
-    # Сортировка
     df = df.sort_values(by='Positions').reset_index(drop=True)
 
     # Добавление SN-LABEL, если нужно
@@ -108,52 +98,53 @@ def build_program_files(project_data, df, template_path):
         }
         df = pd.concat([df, pd.DataFrame([sn_row])], ignore_index=True)
 
-    # Создание временного файла .xlsm
+    # Загружаем шаблон с сохранением макросов (keep_vba=True)
+    wb = openpyxl.load_workbook(template_path, keep_vba=True)
+    ws_proj = wb['Project Data']
+    ws_pnp = wb['PNPwizard']
+
+    # Заполняем Project Data
+    ws_proj['B1'] = project_data.project_name
+    ws_proj['B2'] = project_data.pcb_side
+    ws_proj['B3'] = project_data.board_dimensions
+    ws_proj['B4'] = project_data.multiplication
+    if project_data.rotated_blocks:
+        ws_proj['B5'] = '0;0'
+    else:
+        ws_proj['B5'] = f"{project_data.pitch_x};{project_data.pitch_y}"
+
+    side = project_data.pcb_side.upper()
+    if side == 'BOT':
+        ws_proj['B6'] = project_data.fiducial_bot1
+        ws_proj['B7'] = project_data.fiducial_bot2
+    else:
+        ws_proj['B8'] = project_data.fiducial_top1
+        ws_proj['B9'] = project_data.fiducial_top2
+
+    board_x, board_y, _ = map(float, project_data.board_dimensions.split(';'))
+    mult_x, mult_y = map(int, project_data.multiplication.split(';'))
+    pitch_x = project_data.pitch_x
+    pitch_y = project_data.pitch_y
+    rotated = project_data.rotated_blocks
+    offsets = calculate_offsets(board_x, board_y, mult_x, mult_y, pitch_x, pitch_y, rotated)
+    for i, offset in enumerate(offsets):
+        ws_proj.cell(row=18 + i, column=2, value=offset)
+
+    # Заполняем PNPwizard
+    for idx, row in df.iterrows():
+        row_num = idx + 2
+        ws_pnp.cell(row=row_num, column=1, value=row['Positions'])
+        ws_pnp.cell(row=row_num, column=2, value=row['Article name'])
+        ws_pnp.cell(row=row_num, column=3, value=row['Center-X(mm)'])
+        ws_pnp.cell(row=row_num, column=4, value=row['Center-Y(mm)'])
+        ws_pnp.cell(row=row_num, column=5, value=row['Rotation'])
+
+    # Сохраняем .xlsm
     output_dir = tempfile.gettempdir()
     filename = f"{project_data.project_name}_{project_data.pcb_side}.xlsm"
     output_path = os.path.join(output_dir, filename)
-
-    with xw.App(visible=False, add_book=False) as app:
-        wb = app.books.open(template_path)
-
-        ws_proj = wb.sheets['Project Data']
-        ws_proj.range('B1').value = project_data.project_name
-        ws_proj.range('B2').value = project_data.pcb_side
-        ws_proj.range('B3').value = project_data.board_dimensions
-        ws_proj.range('B4').value = project_data.multiplication
-        if project_data.rotated_blocks:
-            ws_proj.range('B5').value = '0;0'
-        else:
-            ws_proj.range('B5').value = f"{project_data.pitch_x};{project_data.pitch_y}"
-
-        side = project_data.pcb_side.upper()
-        if side == 'BOT':
-            ws_proj.range('B6').value = project_data.fiducial_bot1
-            ws_proj.range('B7').value = project_data.fiducial_bot2
-        else:
-            ws_proj.range('B8').value = project_data.fiducial_top1
-            ws_proj.range('B9').value = project_data.fiducial_top2
-
-        board_x, board_y, _ = map(float, project_data.board_dimensions.split(';'))
-        mult_x, mult_y = map(int, project_data.multiplication.split(';'))
-        pitch_x = project_data.pitch_x
-        pitch_y = project_data.pitch_y
-        rotated = project_data.rotated_blocks
-        offsets = calculate_offsets(board_x, board_y, mult_x, mult_y, pitch_x, pitch_y, rotated)
-        for i, offset in enumerate(offsets):
-            ws_proj.range(f'B{18 + i}').value = offset
-
-        ws_pnp = wb.sheets['PNPwizard']
-        for idx, row in df.iterrows():
-            row_num = idx + 2
-            ws_pnp.range(f'A{row_num}').value = row['Positions']
-            ws_pnp.range(f'B{row_num}').value = row['Article name']
-            ws_pnp.range(f'C{row_num}').value = row['Center-X(mm)']
-            ws_pnp.range(f'D{row_num}').value = row['Center-Y(mm)']
-            ws_pnp.range(f'E{row_num}').value = row['Rotation']
-
-        wb.save(output_path)
-        wb.close()
+    wb.save(output_path)
+    wb.close()
 
     # Генерация .pnp
     try:
