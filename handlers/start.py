@@ -13,19 +13,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🛠 *Преобразовать из Excel в PNP* — Быстрое преобразование таблицы в PNP-формат\n"
         "🔌 *Конвертировать из Altium PnP ➡ в Excel* — Импорт данных из Altium Designer (.txt)\n"
         "📊 *Сравнить таблицы* — Объединение и разделение списков по слоям\n"
+        "🔍 *Проверить PNP по BOM* — Сравнение необходимого .pnp с вашей BOM-таблицей\n"
         "❓ *Помощь* — Подробная справка по структуре исходных файлов\n\n"
         "🤖 Выберите необходимую команду на вертикальной клавиатуре ниже:",
         parse_mode="Markdown",
         reply_markup=reply_markup
     )
 
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "📌 Доступные команды:\n"
-        "/start – приветствие\n"
-        "/help – эта справка\n"
-        "/create_pnp_from_excel – преобразовать Excel-файл в PNP-формат\n"
-        "/convert_from_altium_pnp_to_excel – преобразовать PnP-файл (Altium) в Excel\n"
-        "/compare_pnp_data – объединить две таблицы с разделением по слоям\n"
-        "/generate_megatool – полный цикл: загрузить два файла, получить результат, заполнить шаблон, применить коррекцию Move Auto (опционально) и получить .xlsm + .pnp"
-    )
+async def help_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработчик нажатия на кнопку 'Помощь'"""
+    from handlers.help import help_command
+    await help_command(update, context)

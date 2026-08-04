@@ -23,6 +23,7 @@ BUTTONS = {
     "convert_altium": "🔌 Конвертировать из Altium PnP ➡ в Excel",
     "compare": "📊 Сравнить таблицы",
     "megatool": "🚀 Создать MegaTool и PNP(SMT)",
+    "validate": "🔍 Проверить PNP по BOM",
     "help": "❓ Помощь"
 }
 
@@ -32,6 +33,7 @@ KEYBOARD = [
     [BUTTONS["create_pnp"]],
     [BUTTONS["convert_altium"]],
     [BUTTONS["compare"]],
+    [BUTTONS["validate"]],
     [BUTTONS["help"]]
 ]
 

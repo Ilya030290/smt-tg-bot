@@ -125,13 +125,15 @@ async def save_and_send_final(update: Update, context: ContextTypes.DEFAULT_TYPE
         xlsm_path, pnp_path = build_program_files(project, df, TEMPLATE_XLSM)
 
         if pnp_path:
+            context.user_data['pnp_for_validation'] = pnp_path
             with open(pnp_path, 'rb') as f:
                 await update.message.reply_document(
                     document=f,
                     filename=os.path.basename(pnp_path),
                     caption="📄 Сгенерирован PNP-файл."
                 )
-            delete_file(pnp_path)
+        else:
+            context.user_data['pnp_for_validation'] = None
 
         with open(xlsm_path, 'rb') as f:
             await update.message.reply_document(
@@ -144,16 +146,15 @@ async def save_and_send_final(update: Update, context: ContextTypes.DEFAULT_TYPE
         delete_file(xlsm_path)
 
         await update.message.reply_text(
-            "✅ Работа завершена. Можете выбрать новую команду из главного меню",
-            reply_markup=reply_markup
+            "❓ Вам необходимо сверить правильность заполнения партномеров и позиций вашего .pnp в соответствии с вашим BOM?",
+            reply_markup=YES_NO_MARKUP
         )
+        context.user_data['waiting_for_validation_answer'] = True
 
     except Exception as e:
         logger.error(f"Ошибка при сохранении: {e}")
         import traceback
         await update.message.reply_text(f"❌ Ошибка: {traceback.format_exc()}")
-
-    context.user_data.clear()
 
 async def handle_gen_params_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.user_data.get('waiting_for_gen_params'):

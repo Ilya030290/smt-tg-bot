@@ -10,6 +10,46 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     document = update.message.document
     file_name = document.file_name
 
+    # Отдельная команда: ожидание BOM
+    if context.user_data.get('waiting_for_bom'):
+        from handlers.validate import handle_bom_file
+        await handle_bom_file(update, context)
+        return
+
+    # Отдельная команда: ожидание PNP
+    if context.user_data.get('waiting_for_pnp'):
+        from handlers.validate import handle_pnp_file
+        await handle_pnp_file(update, context)
+        return
+
+    # После генерации: ожидание BOM для проверки
+    if context.user_data.get('waiting_for_bom_after_generation'):
+        if not file_name.endswith(('.xls', '.xlsx')):
+            await update.message.reply_text("Пожалуйста, отправьте файл Excel (.xls или .xlsx).")
+            return
+        try:
+            bom_path = await download_file(document)
+            pnp_path = context.user_data.get('pnp_for_validation')
+            if not pnp_path or not os.path.exists(pnp_path):
+                await update.message.reply_text("❌ Ошибка: файл .pnp не найден. Попробуйте сгенерировать заново.")
+                context.user_data.clear()
+                return
+
+            await update.message.reply_text("⏳ Выполняю проверку...")
+            from handlers.validate import run_validation_and_send_report
+            success = await run_validation_and_send_report(
+                update, context, bom_path, pnp_path,
+                finish_message="✅ Работа завершена. Можете выбрать новую команду из главного меню"
+            )
+            if success:
+                context.user_data.clear()
+            else:
+                context.user_data.clear()
+        except Exception as e:
+            await update.message.reply_text(f"❌ Ошибка при проверке: {e}")
+            context.user_data.clear()
+        return
+    
     # Генератор: первый файл
     if context.user_data.get('waiting_for_gen_file1'):
         if not file_name.endswith(('.xls', '.xlsx')):
