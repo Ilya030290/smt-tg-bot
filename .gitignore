@@ -1,10 +1,39 @@
-token.txt
-.env
+# Python
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Виртуальное окружение
+venv/
+env/
+ENV/
+.venv/
+
+# Токены и секреты
+token.txt
+*.env
+*.key
+*.pem
+
+# Временные файлы
+*.tmp
 *.xlsm
 *.xlsx
-!template.xlsm
-debug_results/
-temp_*.xlsx
+*.pnp
+temp/
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

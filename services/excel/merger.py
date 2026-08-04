@@ -129,7 +129,7 @@ def merge_tables(file1_path, file2_path, original_filename1=None):
         dnp_data.append({'DNP_BOT': bot, 'DNP_TOP': top})
     dnp_df = pd.DataFrame(dnp_data)
 
-    # ---- ИСПРАВЛЕНИЕ: сохранение во временную папку ----
+    # ---- Сохранение во временную папку ----
     output_dir = tempfile.gettempdir()
     if original_filename1:
         base_name = os.path.splitext(os.path.basename(original_filename1))[0]

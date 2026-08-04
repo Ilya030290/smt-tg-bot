@@ -4,8 +4,6 @@ import tempfile
 import pandas as pd
 import chardet
 
-
-# Вспомогательные функции
 def detect_delimiter(line):
     if '!' in line:
         return '!'
@@ -199,7 +197,6 @@ def convert_pnp_to_excel(input_path, original_filename):
     if missing:
         raise RuntimeError(f"Не удалось найти обязательные столбцы: {missing}")
 
-    # Обработка слоя (улучшенная нормализация)
     mirror_col = find_column_by_keywords(df, ['mirror', 'mirrored'])
     if mirror_col is not None:
         df.rename(columns={mirror_col: 'Mirror'}, inplace=True)
@@ -212,7 +209,6 @@ def convert_pnp_to_excel(input_path, original_filename):
         else:
             df['Layer'] = 'TopLayer'
 
-    # Определение единиц измерения
     orig_x = found_info.get('Center-X(mm)', '')
     orig_y = found_info.get('Center-Y(mm)', '')
     is_mil_x = '(mil)' in orig_x.lower()

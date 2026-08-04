@@ -1,5 +1,6 @@
 import os
 import tempfile
+import re
 import pandas as pd
 from openpyxl.styles import Font
 
@@ -58,25 +59,19 @@ def apply_formatting_to_results(sheet, data_rows):
         msg_cell.value = "Несоответствий не выявлено"
         msg_cell.font = Font(color="00B050", bold=True)
 
-
 def transform_pnp(input_path, original_filename):
     """
     Преобразует Excel-файл в PNP-формат.
     input_path – путь к входному файлу (временный)
-    original_filename – оригинальное имя файла, присланное пользователем
+    original_filename – оригинальное имя файла
     Возвращает путь к созданному выходному файлу.
     """
-    # Чтение файла (без заголовков)
     df = pd.read_excel(input_path, header=None,
                        names=["Article name", "Qty", "Positions"])
-
-    # Удаление возможных строк-заголовков
     df = df[~df["Positions"].astype(str).str.lower().eq("positions")]
     df = df[~df["Qty"].astype(str).str.lower().eq("qty")]
-
     df["Qty"] = pd.to_numeric(df["Qty"], errors="coerce")
 
-    # Фильтрация мусора
     mask = (
         df["Positions"].isna() |
         df["Positions"].astype(str).str.strip().eq("") |
@@ -86,7 +81,6 @@ def transform_pnp(input_path, original_filename):
     )
     df_filtered = df[~mask].copy()
 
-    # Построение transformed_df (разбивка Positions)
     transformed_data = []
     for _, row in df_filtered.iterrows():
         article = row["Article name"]
@@ -105,7 +99,6 @@ def transform_pnp(input_path, original_filename):
     )
     transformed_df = transformed_df[~mask2]
 
-    # Построение results_df
     results_data = []
     for _, row in df_filtered.iterrows():
         article = row["Article name"]
@@ -125,10 +118,7 @@ def transform_pnp(input_path, original_filename):
         })
     results_df = pd.DataFrame(results_data)
 
-    # Формируем имя выходного файла на основе оригинального имени
     base_name = os.path.splitext(original_filename)[0]
-    # Удаляем недопустимые символы для имени файла (заменяем на подчёркивание)
-    import re
     safe_base_name = re.sub(r'[\\/*?:"<>|]', '_', base_name)
     output_dir = tempfile.gettempdir()
     output_path = os.path.join(output_dir, f"{safe_base_name}_PNP.xlsx")
