@@ -84,8 +84,11 @@ def telegram_webhook():
     try:
         data = request.get_json(force=True)
 
-        logger.info("Получен update:")
-        logger.info(data)
+        logger.info(
+            "Update %s from chat %s",
+            data.get("update_id"),
+            data.get("message", {}).get("chat", {}).get("id")
+        )
 
         update = Update.de_json(data, application.bot)
 
