@@ -24,11 +24,6 @@ token.txt
 *.pem
 
 # Временные файлы
-*.tmp
-*.xlsm
-*.xlsx
-*.pnp
-temp/
 *.db
 *.sqlite3
 
