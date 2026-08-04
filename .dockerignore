@@ -1,8 +1,0 @@
-token.txt
-.git
-.gitignore
-__pycache__
-*.pyc
-*.xlsx
-!template.xlsm
-debug_results/
