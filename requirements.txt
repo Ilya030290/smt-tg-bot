@@ -1,4 +1,4 @@
-python-telegram-bot>=20.8
+python-telegram-bot[webhooks]>=20.8
 aiohttp>=3.10
 pandas>=2.0
 openpyxl>=3.1
