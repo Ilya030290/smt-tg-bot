@@ -63,7 +63,6 @@ asyncio.set_event_loop(loop)
 
 async def startup():
     await application.initialize()
-    await application.start()
     logger.info("Telegram Application initialized")
     
 loop.run_until_complete(startup())    
