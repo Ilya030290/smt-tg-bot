@@ -2,6 +2,7 @@ import os
 import re
 import math
 import logging
+import asyncio
 import pandas as pd
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -122,7 +123,12 @@ async def save_and_send_final(update: Update, context: ContextTypes.DEFAULT_TYPE
             move_delta_y=data.get('move_delta_y', 0.0),
         )
 
-        xlsm_path, pnp_path = build_program_files(project, df, TEMPLATE_XLSM)
+        xlsm_path, pnp_path = await asyncio.to_thread(
+            build_program_files,
+            project,
+            df,
+            TEMPLATE_XLSM
+        )
 
         if pnp_path:
             context.user_data['pnp_for_validation'] = pnp_path

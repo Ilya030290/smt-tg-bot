@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import asyncio
 from telegram import Update
 from telegram.ext import ContextTypes
 from config import reply_markup
@@ -16,18 +17,31 @@ async def run_validation_and_send_report(update: Update, context: ContextTypes.D
     Возвращает True при успехе, False при ошибке.
     """
     try:
-        bom_df = pd.read_excel(bom_path)
+        bom_df = await asyncio.to_thread(
+            pd.read_excel,
+            bom_path
+        ) 
         if 'Positions' not in bom_df.columns or 'Article name' not in bom_df.columns:
             await update.message.reply_text("❌ BOM должен содержать столбцы 'Positions' и 'Article name'.")
             return False
 
-        pnp_df = parse_pnp_to_dataframe(pnp_path)
+        pnp_df = await asyncio.to_thread(
+            parse_pnp_to_dataframe,
+            pnp_path
+        )
         if pnp_df.empty:
             await update.message.reply_text("❌ Не удалось извлечь данные из .pnp. Проверьте формат файла.")
             return False
 
-        result_df = validate_pnp_with_bom(pnp_df, bom_df)
-        report_path = generate_validation_report(result_df)
+        result_df = await asyncio.to_thread(
+            validate_pnp_with_bom,
+            pnp_df,
+            bom_df
+        ) 
+        report_path = await asyncio.to_thread(
+            generate_validation_report,
+            result_df
+        ) 
 
         with open(report_path, 'rb') as f:
             await update.message.reply_document(

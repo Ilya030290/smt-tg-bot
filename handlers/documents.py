@@ -1,4 +1,5 @@
 import os
+import asyncio
 from telegram import Update
 from telegram.ext import ContextTypes
 from services.file_manager import download_file, delete_file
@@ -86,7 +87,11 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             elif file_name.endswith('.txt'):
                 txt_path = await download_file(document)
                 await update.message.reply_text("⏳ Конвертирую PnP-файл в Excel...")
-                second_path = convert_pnp_to_excel(txt_path, file_name)
+                second_path = await asyncio.to_thread(
+                    convert_pnp_to_excel,
+                    txt_path,
+                    file_name
+                )
                 delete_file(txt_path)
             else:
                 await update.message.reply_text("Пожалуйста, отправьте файл Excel (.xls/.xlsx) или текстовый PnP-файл (.txt).")
@@ -98,7 +103,12 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update.message.reply_text("⏳ Выполняю сравнение таблиц...")
         try:
-            result_path = merge_tables(file1_path, second_path, file1_name)
+            result_path =await asyncio.to_thread(
+                merge_tables,
+                file1_path,
+                second_path,
+                file1_name
+            ) 
             context.user_data['last_compare_result'] = result_path
             with open(result_path, 'rb') as f:
                 await update.message.reply_document(
@@ -130,7 +140,11 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⏳ Обрабатываю...")
         try:
             input_path = await download_file(document)
-            output_path = transform_pnp(input_path, file_name)
+            output_path = await asyncio.to_thread(
+                transform_pnp,
+                input_path,
+                file_name
+            )
             with open(output_path, 'rb') as f:
                 await update.message.reply_document(document=f, filename=os.path.basename(output_path))
             delete_file(input_path)
@@ -149,7 +163,11 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⏳ Обрабатываю...")
         try:
             input_path = await download_file(document)
-            output_path = convert_pnp_to_excel(input_path, file_name)
+            output_path = await asyncio.to_thread(
+                convert_pnp_to_excel,
+                input_path,
+                file_name
+            )
             with open(output_path, 'rb') as f:
                 await update.message.reply_document(document=f, filename=os.path.basename(output_path))
             delete_file(input_path)
@@ -190,7 +208,12 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             try:
                 second_path = await download_file(document)
                 await update.message.reply_text("⏳ Выполняю сравнение...")
-                output_path = merge_tables(first_path, second_path, first_name)
+                output_path = await asyncio.to_thread(
+                    merge_tables,
+                    first_path,
+                    second_path,
+                    first_name
+                ) 
                 context.user_data['last_compare_result'] = output_path
                 with open(output_path, 'rb') as f:
                     await update.message.reply_document(
