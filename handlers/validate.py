@@ -1,17 +1,14 @@
 import os
 import pandas as pd
 import asyncio
-
 from telegram import Update
 from telegram.ext import ContextTypes
-
 from config import reply_markup
-
+from services.workflow import reset_workflow_state
 from services.file_manager import (
     download_file,
     delete_file
 )
-
 from services.pnp_validator import (
     parse_pnp_to_dataframe,
     parse_csv_to_dataframe,
@@ -155,11 +152,9 @@ async def validate_start(
     context: ContextTypes.DEFAULT_TYPE
 ):
 
-    context.user_data.clear()
+    reset_workflow_state(context)
 
-    context.user_data[
-        'waiting_for_bom'
-    ] = True
+    context.user_data['waiting_for_bom'] = True
 
     await update.message.reply_text(
         "🔍 Загрузите Excel-файл с BOM (из Odin).\n"

@@ -10,10 +10,13 @@ from config import TEMPLATE_XLSM, YES_NO_MARKUP, reply_markup
 from models.project_data import ProjectData
 from services.file_manager import delete_file
 from services.excel.workbook_builder import build_program_files, apply_delta_to_dataframe
+from services.workflow import reset_workflow_state
 
 logger = logging.getLogger(__name__)
 
 async def generate_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    reset_workflow_state(context)
     context.user_data.pop('waiting_for_gen_file1', None)
     context.user_data.pop('waiting_for_gen_file2', None)
     context.user_data.pop('waiting_for_gen_params', None)
