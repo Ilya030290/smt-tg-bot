@@ -24,6 +24,7 @@ BUTTONS = {
     "compare": "📊 Сравнить таблицы",
     "megatool": "🚀 Создать MegaTool и PNP(SMT)",
     "validate": "🔍 Проверить PNP по BOM",
+    "drying": "🔥 Узнать время сушки компонента",
     "help": "❓ Помощь"
 }
 
@@ -34,6 +35,7 @@ KEYBOARD = [
     [BUTTONS["convert_altium"]],
     [BUTTONS["compare"]],
     [BUTTONS["validate"]],
+    [BUTTONS["drying"]],
     [BUTTONS["help"]]
 ]
 
@@ -41,6 +43,17 @@ YES_NO_BUTTONS = [["🟢 Да", "🔴 Нет"]]
 
 reply_markup = ReplyKeyboardMarkup(KEYBOARD, resize_keyboard=True)
 YES_NO_MARKUP = ReplyKeyboardMarkup(YES_NO_BUTTONS, resize_keyboard=True, one_time_keyboard=True)
+
+MSL_BUTTONS = [
+    ["2", "2A", "3"],
+    ["4", "5", "5A"]
+]
+MSL_KEYBOARD = ReplyKeyboardMarkup(MSL_BUTTONS, resize_keyboard=True, one_time_keyboard=True)
+
+EXPOSURE_BUTTONS = [
+    ["🔹 Больше 72 ч", "🔸 Меньше 72 ч"]
+]
+EXPOSURE_KEYBOARD = ReplyKeyboardMarkup(EXPOSURE_BUTTONS, resize_keyboard=True, one_time_keyboard=True)
 
 LOGGING_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 LOGGING_LEVEL = logging.INFO

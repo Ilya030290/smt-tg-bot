@@ -9,10 +9,15 @@ from handlers.help import help_command
 from handlers.validate import validate_start
 from handlers.generate import generate_start, handle_gen_params_text
 from services.file_manager import delete_file
+from handlers.drying import drying_start, handle_drying_text
 import os
 
 async def handle_keyboard_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
+    
+    if context.user_data.get('drying_state') in ('awaiting_thickness', 'awaiting_msl', 'awaiting_exposure'):
+        await handle_drying_text(update, context)
+        return 
 
     if context.user_data.get('waiting_for_validation_answer'):
         clean_text = text.lower().replace('🟢', '').replace('🔴', '').strip()
@@ -52,7 +57,9 @@ async def handle_keyboard_buttons(update: Update, context: ContextTypes.DEFAULT_
     elif text == BUTTONS["megatool"]:
         await generate_start(update, context)
     elif text == BUTTONS["validate"]:
-        await validate_start(update, context)     
+        await validate_start(update, context)
+    elif text == BUTTONS["drying"]:
+        await drying_start(update, context)    
     elif text == BUTTONS["help"]:
         await help_command(update, context)
     else:

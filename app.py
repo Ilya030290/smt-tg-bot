@@ -16,7 +16,7 @@ from handlers.generate import generate_start
 from handlers.validate import validate_start
 from handlers.keyboard_handler import handle_keyboard_buttons
 from handlers.documents import handle_document
-
+from handlers.drying import drying_start
 
 def create_application() -> Application:
 
@@ -33,7 +33,8 @@ def create_application() -> Application:
     application.add_handler(CommandHandler("compare_pnp_data", compare_start))
     application.add_handler(CommandHandler("generate_megatool", generate_start))
     application.add_handler(CommandHandler("validate", validate_start))
-
+    application.add_handler(CommandHandler("drying_time", drying_start))
+    
     application.add_handler(
         MessageHandler(
             filters.Document.ALL,
