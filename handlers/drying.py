@@ -115,7 +115,7 @@ async def drying_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
     context.user_data['drying_state'] = 'awaiting_thickness'
     await update.message.reply_text(
-        "🔥 Введите толщину корпуса компонента в мм (например, 0.7):"
+        "📏 Введите толщину корпуса компонента в мм (например, 0.7):"
     )
 
 async def handle_drying_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -130,7 +130,7 @@ async def handle_drying_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             context.user_data['thickness'] = thickness
             context.user_data['drying_state'] = 'awaiting_msl'
             await update.message.reply_text(
-                "📦 Выберите уровень MSL:",
+                "💧 Выберите уровень MSL:",
                 reply_markup=MSL_KEYBOARD
             )
         except ValueError:
