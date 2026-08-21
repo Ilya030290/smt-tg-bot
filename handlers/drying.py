@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 from telegram import Update
 from telegram.ext import ContextTypes
-from config import reply_markup, MSL_KEYBOARD, EXPOSURE_KEYBOARD
+from config import reply_markup, MSL_KEYBOARD, EXPOSURE_KEYBOARD, MSL_BUTTONS
 
 logger = logging.getLogger(__name__)
 
@@ -54,21 +54,43 @@ def load_drying_table():
         return []
 
 def parse_thickness(thickness_str):
-    s = thickness_str.replace('mm', '').strip()
-    numbers = re.findall(r'[\d.]+', s)
-    if not numbers:
+    if thickness_str is None:
         return None, None
 
-    if len(numbers) == 1:
-        val = float(numbers[0])
-        if '<' in s:
-            return None, val
-        elif '>' in s:
-            return val, None
-        else:
+    s = str(thickness_str).strip().lower()
+    s = s.replace('mm', '').strip()
+
+    s = s.replace('–', '-').replace('—', '-')
+
+    s = s.replace(' ', '')
+
+    if s.startswith('<'):
+        numbers = re.findall(r'\d+(?:[.,]\d+)?', s)
+        if not numbers:
             return None, None
-    elif len(numbers) == 2:
-        return float(numbers[0]), float(numbers[1])
+
+        high = float(numbers[0].replace(',', '.'))
+        return None, high
+
+    if s.startswith('>'):
+        numbers = re.findall(r'\d+(?:[.,]\d+)?', s)
+        if not numbers:
+            return None, None
+
+        low = float(numbers[0].replace(',', '.'))
+        return low, None
+
+    numbers = re.findall(r'\d+(?:[.,]\d+)?', s)
+
+    if len(numbers) == 2:
+        low = float(numbers[0].replace(',', '.'))
+        high = float(numbers[1].replace(',', '.'))
+        return low, high
+
+    if len(numbers) == 1:
+        value = float(numbers[0].replace(',', '.'))
+        return value, value
+
     return None, None
 
 def find_drying_time(thickness, msl, exposure_gt72):
@@ -137,7 +159,12 @@ async def handle_drying_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await update.message.reply_text("❌ Пожалуйста, введите положительное число (например, 0.7).")
 
     elif state == 'awaiting_msl':
-        valid_msl = ['2', '2A', '3', '4', '5', '5A']
+        valid_msl = [
+            msl
+            for row in MSL_BUTTONS
+            for msl in row
+        ]
+        
         if text not in valid_msl:
             await update.message.reply_text(
                 f"❌ Пожалуйста, выберите уровень MSL из кнопок (допустимые: {', '.join(valid_msl)})",
@@ -162,7 +189,7 @@ async def handle_drying_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
         exposure_gt72 = (text == "🔹 Больше 72 ч")
         thickness = context.user_data.get('thickness')
         msl = context.user_data.get('msl')
-        if not thickness or not msl:
+        if thickness is None or msl is None:
             await update.message.reply_text("❌ Что-то пошло не так. Начните заново /drying_time")
             context.user_data.clear()
             return
@@ -170,7 +197,12 @@ async def handle_drying_text(update: Update, context: ContextTypes.DEFAULT_TYPE)
         result = find_drying_time(thickness, msl, exposure_gt72)
         if result is None:
             await update.message.reply_text(
-                "❌ Не удалось найти данные для указанных параметров. Проверьте ввод или обратитесь к администратору."
+                "❌ В таблице сушки не найден подходящий диапазон.\n\n"
+                f"📏 Толщина корпуса: {thickness} мм\n"
+                f"💧 MSL: {msl}\n"
+                f"⏱ Эксплуатация после вскрытия: "
+                f"{'более 72 ч' if exposure_gt72 else 'менее 72 ч'}\n\n"
+                "Проверьте указанную толщину или обратитесь к моему создателю."
             )
             context.user_data.clear()
             await update.message.reply_text("✅ Готово! Можете выбрать новую команду.", reply_markup=reply_markup)
