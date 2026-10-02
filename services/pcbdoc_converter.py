@@ -1,30 +1,27 @@
 import os
-import shutil
-from pathlib import Path
+import sys
 
-try:
-    from pcbdoc_to_pnp import CFBReader, build_rows, write_pnp
-except ImportError:
-    import sys
-    sys.path.append(str(Path(__file__).parent.parent))
-    from pcbdoc_to_pnp import CFBReader, build_rows, write_pnp
-
+_SERVICES_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SERVICES_DIR not in sys.path:
+    sys.path.insert(0, _SERVICES_DIR)
+    
+from pcbdoc_to_pnp import CFBReader, build_rows, write_pnp
 
 def convert_pcbdoc_to_pnp(pcbdoc_path: str, output_dir: str = None) -> str:
-    pcbdoc_path = Path(pcbdoc_path)
-    if not pcbdoc_path.exists():
+    
+    if not os.path.exists(pcbdoc_path):
         raise FileNotFoundError(f"Файл не найден: {pcbdoc_path}")
 
     if output_dir is None:
-        output_dir = pcbdoc_path.parent
+        output_dir = os.path.dirname(pcbdoc_path)
     else:
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
 
     ole = CFBReader(pcbdoc_path)
     rows, origin = build_rows(ole)
 
-    out_txt = output_dir / (pcbdoc_path.stem + "_PnP.txt")
+    base_name = os.path.splitext(os.path.basename(pcbdoc_path))[0]
+    out_txt = os.path.join(output_dir, base_name + "_PnP.txt")
 
     write_pnp(rows, out_txt, source_path=pcbdoc_path)
 
