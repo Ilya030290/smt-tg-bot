@@ -10,6 +10,7 @@ from handlers.validate import validate_start
 from handlers.generate import generate_start, handle_gen_params_text
 from services.file_manager import delete_file
 from handlers.drying import drying_start, handle_drying_text
+from handlers.pcbdoc import pcbdoc_start
 import os
 
 async def handle_keyboard_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -58,6 +59,8 @@ async def handle_keyboard_buttons(update: Update, context: ContextTypes.DEFAULT_
         await generate_start(update, context)
     elif text == BUTTONS["validate"]:
         await validate_start(update, context)
+    elif text == BUTTONS["pcbdoc_to_pnp"]:
+        await pcbdoc_start(update, context)     
     elif text == BUTTONS["drying"]:
         await drying_start(update, context)    
     elif text == BUTTONS["help"]:

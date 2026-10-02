@@ -24,6 +24,7 @@ BUTTONS = {
     "compare": "📊 Сравнить таблицы",
     "megatool": "🚀 Создать MegaTool и PNP(SMT)",
     "validate": "🔍 Проверить PNP по BOM",
+    "pcbdoc_to_pnp": "🔄 Преобразовать данные из Altium PcbDoc в Altium PnP", 
     "drying": "🔥 Узнать время сушки компонента",
     "help": "❓ Помощь"
 }
@@ -35,6 +36,7 @@ KEYBOARD = [
     [BUTTONS["convert_altium"]],
     [BUTTONS["compare"]],
     [BUTTONS["validate"]],
+    [BUTTONS["pcbdoc_to_pnp"]],
     [BUTTONS["drying"]],
     [BUTTONS["help"]]
 ]
