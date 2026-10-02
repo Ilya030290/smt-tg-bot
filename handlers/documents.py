@@ -22,10 +22,11 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("⏳ Конвертирую .PcbDoc в PnP...")
             out_txt_path = convert_pcbdoc_to_pnp(pcbdoc_path)
             
+            original_name = os.path.splitext(document.file_name)[0] 
             with open(out_txt_path, 'rb') as f:
                 await update.message.reply_document(
                     document=f,
-                    filename=os.path.basename(out_txt_path),
+                    filename=f"Pick Place for {original_name}.txt",
                     caption="✅ Готово! Ваш PnP-файл."
                 )
             
