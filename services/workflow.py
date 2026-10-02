@@ -25,6 +25,7 @@ def reset_workflow_state(context: ContextTypes.DEFAULT_TYPE):
         'gen_param_step',
         'df',
         'last_compare_result',
+        'waiting_for_pcbdoc',
     ]
 
     for key in keys:

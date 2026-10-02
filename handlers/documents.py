@@ -6,11 +6,38 @@ from services.file_manager import download_file, delete_file
 from services.excel.transformer import transform_pnp
 from services.excel.converter import convert_pnp_to_excel
 from services.excel.merger import merge_tables
+from services.pcbdoc_converter import convert_pcbdoc_to_pnp
 
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     document = update.message.document
     file_name = document.file_name
-
+    
+    if context.user_data.get('waiting_for_pcbdoc'):
+        if not file_name.lower().endswith('.pcbdoc'):
+            await update.message.reply_text("❌ Пожалуйста, отправьте файл с расширением **.PcbDoc**.", parse_mode="Markdown")
+            return
+        try:
+            pcbdoc_path = await download_file(document)
+            
+            await update.message.reply_text("⏳ Конвертирую .PcbDoc в PnP...")
+            out_txt_path = convert_pcbdoc_to_pnp(pcbdoc_path)
+            
+            with open(out_txt_path, 'rb') as f:
+                await update.message.reply_document(
+                    document=f,
+                    filename=os.path.basename(out_txt_path),
+                    caption="✅ Готово! Ваш PnP-файл."
+                )
+            
+            delete_file(pcbdoc_path)
+            delete_file(out_txt_path)
+            
+        except Exception as e:
+            await update.message.reply_text(f"❌ Ошибка конвертации: {e}")
+        finally:
+            context.user_data.clear()
+        return
+    
     # Отдельная команда: ожидание BOM
     if context.user_data.get('waiting_for_bom'):
         from handlers.validate import handle_bom_file
