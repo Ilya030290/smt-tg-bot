@@ -274,10 +274,13 @@ def build_rows(ole: CFBReader):
     texts = parse_texts(ole.read_stream("Texts6/Data"))
 
     comments = {}
+    designators = {}
     for t in texts:
         if t["comment"] is not None:
             comments[t["component"]] = t["comment"]
-
+        if t["designator"] is not None:            
+        designators[t["component"]] = t["designator"]
+        
     pads_by_component = {}
     for pad in pads:
         pads_by_component.setdefault(pad["component"], []).append(pad)
@@ -300,7 +303,7 @@ def build_rows(ole: CFBReader):
         layer = comp.get("LAYER", "TOP").upper()
         layer = "TopLayer" if layer == "TOP" else "BottomLayer" if layer == "BOTTOM" else layer
         rows.append({
-            "Designator": comp.get("SOURCEDESIGNATOR", ""),
+            "Designator": designators.get(idx) or comp.get("SOURCEDESIGNATOR", ""),
             "Comment": comments.get(idx, ""),
             "Layer": layer,
             "Footprint": comp.get("PATTERN", ""),
