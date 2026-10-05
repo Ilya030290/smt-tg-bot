@@ -279,7 +279,7 @@ def build_rows(ole: CFBReader):
         if t["comment"] is not None:
             comments[t["component"]] = t["comment"]
         if t["designator"] is not None:            
-        designators[t["component"]] = t["designator"]
+            designators[t["component"]] = t["designator"]
         
     pads_by_component = {}
     for pad in pads:
