@@ -306,7 +306,7 @@ def build_rows(ole: CFBReader):
             "Designator": designators.get(idx) or comp.get("SOURCEDESIGNATOR", ""),
             "Comment": comments.get(idx, ""),
             "Layer": layer,
-            "Footprint": comp.get("PATTERN", ""),
+            "Footprint": comp.get("PATTERN", "").replace(" ", "_"),
             "Center-X(mm)": center_x,
             "Center-Y(mm)": center_y,
             "Rotation": float(comp.get("ROTATION", "0")),
